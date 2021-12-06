@@ -5,7 +5,7 @@ block_cipher = None
 
 
 a = Analysis(['main.py'],
-             pathex=['C:\\Users\\New\\PycharmProjects\\remote-control-socket'],
+             pathex=['C:\\Users\\phyro\\PycharmProjects\\pythonProject1'],
              binaries=[],
              datas=[],
              hiddenimports=[],
