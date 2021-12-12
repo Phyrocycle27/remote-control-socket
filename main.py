@@ -80,7 +80,7 @@ def get_working_dir():
 
 
 def create_startup_task(working_dir):
-    if not (app_name in run_cmd_command(fr'SCHTASKS /Query /TN "{app_name_destination}"')):
+    if not (app_name_destination in run_cmd_command(fr'SCHTASKS /Query /TN "{app_name_destination}"')):
         run_cmd_command(fr'SCHTASKS /CREATE /SC ONLOGON /TN "{app_name_destination}" /TR "{working_dir}"')
 
 
