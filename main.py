@@ -92,7 +92,7 @@ def add_to_startup():
         print('Program was added to startup')
 
         subprocess.Popen([working_dir])
-        ctypes.windll.user32.MessageBoxW(0, "Success", "Successfully added to startup", 0)
+        # ctypes.windll.user32.MessageBoxW(0, "Success", "Successfully added to startup", 0)
         sys.exit()
     else:
         print('Program have already added in startup')
